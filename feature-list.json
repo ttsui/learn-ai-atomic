@@ -21,7 +21,7 @@
       "Install isomorphic-dompurify for input sanitization",
       "Verify TypeScript configuration"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "category": "setup",
@@ -35,7 +35,7 @@
       "Add .env.local to .gitignore",
       "Create .env.example with placeholder values"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "category": "setup",
@@ -50,7 +50,7 @@
       "Add X-Frame-Options DENY header",
       "Add X-Content-Type-Options nosniff header"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "category": "functional",
@@ -64,7 +64,7 @@
       "Extend NextAuth Session interface with accessToken and error",
       "Extend NextAuth JWT interface with token fields and expiry"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "category": "functional",
@@ -81,7 +81,7 @@
       "Implement session callback to pass accessToken",
       "Set session strategy to 'jwt' for serverless compatibility"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "category": "functional",
@@ -92,7 +92,7 @@
       "Create handler with NextAuth(authOptions)",
       "Export handler as GET and POST"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "category": "functional",
@@ -105,7 +105,7 @@
       "Handle refresh failure by setting error field",
       "Add try-catch for network errors"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "category": "functional",
@@ -133,7 +133,7 @@
       "Return formatted response with sessionId, pickerUri, pollInterval, timeout",
       "Handle errors and return appropriate status codes"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "category": "functional",
@@ -148,7 +148,7 @@
       "Handle FAILED_PRECONDITION error (user hasn't finished)",
       "Handle 404 NOT_FOUND error (session expired)"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "category": "functional",
@@ -163,7 +163,7 @@
       "Return mediaItems array and nextPageToken for pagination",
       "Handle errors (401, 403, 429) with appropriate messages"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "category": "functional",
@@ -205,7 +205,7 @@
       "Return pickerUri and sessionId",
       "Add error handling for network failures"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "category": "functional",
@@ -219,7 +219,7 @@
       "Return mediaItems array",
       "Handle pagination if needed"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "category": "ui",
@@ -236,7 +236,7 @@
       "Disable button when pending",
       "Style with Tailwind CSS"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "category": "ui",
@@ -251,7 +251,7 @@
       "Show error message with retry button when error",
       "Style states with appropriate colors and icons"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "category": "ui",
@@ -267,7 +267,7 @@
       "Set timeout to call onError after specified duration",
       "Return startPolling, stopPolling, isPolling"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "category": "ui",
@@ -284,7 +284,7 @@
       "Show appropriate UI for each state",
       "Allow reset to idle state after completion"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "category": "ui",
@@ -301,7 +301,7 @@
       "Use aspect-square and object-cover for consistent sizing",
       "Configure sizes prop for responsive images"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "category": "ui",
@@ -316,7 +316,7 @@
       "Add gap between items",
       "Support onClick to show lightbox (optional)"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "category": "ui",
@@ -329,7 +329,7 @@
       "Match grid layout of actual gallery",
       "Use aspect-square for placeholder boxes"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "category": "ui",
@@ -375,7 +375,7 @@
       "Create app/photos/loading.tsx with loading skeleton",
       "Create app/photos/error.tsx with error boundary"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "category": "ui",
@@ -391,7 +391,7 @@
       "Show empty state if no sessionId",
       "Handle errors with error boundary"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "category": "functional",
