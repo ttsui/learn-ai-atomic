@@ -1,0 +1,182 @@
+---
+date: 2025-12-29T21:45:15Z
+git_commit: 467e5a0
+branch: claude/research-nextjs-photos-api-RYuoa
+status: complete
+type: handoff
+---
+
+# Handoff: Next.js + Google Photos Picker API Integration Research
+
+## 1. Primary Request and Intent
+
+User requested comprehensive research on best practices and architecture patterns for building a Next.js Web App that integrates with Google Photos Picker API. The goal was to understand:
+- How the Google Photos Picker API works
+- Authentication requirements and OAuth implementation
+- Security best practices
+- Recommended architecture patterns for Next.js integration
+
+## 2. Key Technical Concepts
+
+**Critical API Deprecation**:
+- Legacy Library API scopes (`photoslibrary.readonly`, `photoslibrary.sharing`, `photoslibrary`) will return `403 PERMISSION_DENIED` after **March 31, 2025**
+- MUST use Google Photos Picker API with `photospicker.mediaitems.readonly` scope instead
+- Picker API uses a session-based flow: create → user picks → poll → fetch media items
+
+**Recommended Tech Stack**:
+- NextAuth.js v5 (Auth.js) for OAuth handling
+- Next.js 14+ App Router
+- Server Components for authenticated data fetching
+- SWR or TanStack Query for client-side caching
+- HTTP-only cookies for session management
+
+**Security Requirements**:
+- PKCE (Proof Key for Code Exchange) - required for OAuth 2.1
+- State parameter validation for CSRF protection
+- Server-side token storage only (never in localStorage or client state)
+- Tokens must never be exposed to client-side JavaScript
+- Base URLs from Google Photos expire after 60 minutes (never cache long-term)
+
+**API Flow Architecture**:
+```
+1. POST /v1/sessions → Get pickerUri + sessionId
+2. User opens pickerUri in Google Photos UI → Selects photos
+3. GET /v1/sessions/{id} → Poll until mediaItemsSet: true
+4. GET /v1/mediaItems?sessionId={id} → Fetch selected photos
+```
+
+## 3. Files and Code Sections
+
+**Research Documents Created** (all in `research/docs/`):
+
+- `2025-12-29-nextjs-google-photos-picker-integration.md`
+  - Why: Main integration guide with quick start code and implementation checklist
+  - Contents: Complete overview, code examples, 5-phase implementation plan
+
+- `2025-12-29-google-photos-picker-api-overview.md`
+  - Why: Comprehensive API documentation - endpoints, flow, limits, error handling
+  - Contents: API structure, request/response formats, session lifecycle, quota limits
+
+- `2025-12-29-nextjs-oauth-integration-patterns.md`
+  - Why: NextAuth.js configuration and integration patterns
+  - Contents: OAuth setup, token refresh logic, Server Actions, Route Handlers, middleware
+
+- `2025-12-29-google-oauth-security-best-practices.md`
+  - Why: Complete security checklist and implementation guidelines
+  - Contents: PKCE, CSRF protection, token storage, CORS/CSP, common vulnerabilities
+
+- `2025-12-29-nextjs-google-photos-architecture.md`
+  - Why: Component patterns, file structure, hooks, and UI implementation
+  - Contents: File structure, component architecture, polling hooks, error boundaries
+
+## 4. Problem Solving
+
+**Solved**:
+- Identified the critical API migration requirement (legacy API deprecation)
+- Determined the correct OAuth scope for Picker API
+- Established complete security checklist for OAuth implementation
+- Created comprehensive architecture guidelines
+
+**Key Discoveries**:
+- Google Photos Picker API is fundamentally different from Library API:
+  - Library API: Broad access to entire library (deprecated)
+  - Picker API: User-selected content only (secure, recommended)
+- Token refresh must be handled in NextAuth.js JWT callback for automatic renewal
+- Base URLs expire after 60 minutes - must store media item IDs, not URLs
+- Session polling requires proper timeout and interval handling
+- Google Photos APIs do NOT support service accounts
+
+**Web Search Findings**:
+- Confirmed OAuth 2.1 requires PKCE for all flows
+- NextAuth.js v5 has full App Router support
+- Session-based polling is the standard pattern for Picker API
+- Multiple tutorial resources available for NextAuth.js + Google OAuth
+
+## 5. Pending Tasks
+
+All research tasks completed. No pending work.
+
+**If User Wants to Proceed with Implementation**:
+- [ ] Phase 1: Setup (Google Cloud project, OAuth client, environment variables)
+- [ ] Phase 2: Authentication (NextAuth.js installation and configuration)
+- [ ] Phase 3: API Integration (session creation, polling, media fetch)
+- [ ] Phase 4: UI Components (picker button, gallery, lightbox)
+- [ ] Phase 5: Production Readiness (OAuth verification, CSP, monitoring)
+
+## 6. Current Work
+
+**Status**: Research phase COMPLETE. All documents written, committed, and pushed.
+
+**Most Recent Actions**:
+1. Created 5 comprehensive research documents
+2. Committed to git with message: "research: add Next.js + Google Photos Picker API integration research"
+3. Pushed to branch: `claude/research-nextjs-photos-api-RYuoa`
+4. All TodoList items marked as completed
+
+**No Active Work in Progress**: Session is in a clean handoff state.
+
+## 7. Next Step
+
+**For User**: Review the research documents in `research/docs/` to determine if you want to proceed with implementation.
+
+**If Implementing**: Start with the 5-phase implementation checklist in `2025-12-29-nextjs-google-photos-picker-integration.md`:
+1. Create Google Cloud project and enable Picker API
+2. Set up OAuth 2.0 Client ID
+3. Configure environment variables
+4. Install and configure NextAuth.js
+
+## 8. Verbatim Context
+
+> User: "I'm building a Next.js Web App which integrates with Google Photos Picker API. Research best practices and architecture patterns for these requirements."
+
+> Research Agent Response: "This research provides comprehensive guidance for building a Next.js application that integrates with Google Photos Picker API... The legacy `photoslibrary.readonly` scope is deprecated and will return `403 PERMISSION_DENIED` after March 31, 2025. Use the new `photospicker.mediaitems.readonly` scope instead."
+
+## 9. Anti-Context (What NOT to Do)
+
+**Rejected Approaches**:
+- ❌ Do NOT use legacy Library API scopes - they will fail after March 2025
+- ❌ Do NOT store tokens in localStorage or sessionStorage (XSS vulnerability)
+- ❌ Do NOT expose access/refresh tokens to client-side code
+- ❌ Do NOT cache Google Photos `baseUrl` values long-term (60-minute expiration)
+- ❌ Do NOT skip PKCE implementation (required for OAuth 2.1)
+- ❌ Do NOT use service accounts for Google Photos APIs (not supported)
+
+**Common Mistakes to Avoid**:
+- Using wildcard redirect URIs (security risk)
+- Not validating OAuth state parameter (CSRF vulnerability)
+- Prefixing secrets with `NEXT_PUBLIC_` (exposes to client)
+- Implementing custom token refresh without considering race conditions
+- Not handling token expiration gracefully
+
+---
+
+## For Next Agent: Resumption Protocol
+
+**Before taking any action, you MUST**:
+
+1. Read these files to understand the complete research:
+   - `research/docs/2025-12-29-nextjs-google-photos-picker-integration.md` (start here)
+   - Refer to the other 4 research documents as needed
+
+2. Run `git log --oneline -3` to confirm you're at or ahead of commit `467e5a0`
+
+3. Ask the user what they want to do next:
+   - Review the research?
+   - Start implementation?
+   - Have questions about specific aspects?
+
+**Do NOT assume**:
+- That the user wants to proceed with implementation immediately
+- That you should create code without explicit user request
+- That you should modify any existing files
+
+**Context is Complete**:
+- All research findings are documented in `research/docs/`
+- No open questions or blockers
+- Ready for user to decide next steps
+
+**Traps to Avoid**:
+- Don't start implementing before user confirms they want to proceed
+- Don't use the deprecated Library API scopes
+- Don't create OAuth configuration without user's Google Cloud credentials
+- Don't suggest storing tokens client-side (always server-side)
