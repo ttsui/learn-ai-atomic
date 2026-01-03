@@ -62,7 +62,7 @@
       "Add warning about not calling revalidatePath in Server Components",
       "Document best practice: separate data-fetching from mutation actions"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "category": "refactor",

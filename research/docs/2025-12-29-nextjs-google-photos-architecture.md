@@ -326,7 +326,69 @@ export function usePhotos(sessionId: string) {
 }
 ```
 
-#### 2.3 Pagination Handling
+#### 2.3 Cache Revalidation Strategy for Server Actions
+
+**Critical Best Practice: Separation of Data-Fetching and Mutation Actions**
+
+When working with Server Actions in Next.js 16+, it's crucial to understand the distinction between:
+
+1. **Data-Fetching Server Actions** (Read Operations):
+   - Pure read operations that fetch data without side effects
+   - Can be called from Server Components during the render phase
+   - **MUST NOT** use `revalidatePath()` or `revalidateTag()`
+   - Return data directly from external APIs
+   - Example: `getSelectedPhotos(sessionId)` in `app/actions/photos.ts`
+
+2. **Mutation Server Actions** (Write Operations):
+   - Modify server-side state (database, files, cache, etc.)
+   - **MUST** be called from Client Components only
+   - **SHOULD** use `revalidatePath()` or `revalidateTag()` to update caches
+   - Triggered by user interactions (form submissions, button clicks)
+   - Example: Would be `completePhotoSelection()` if needed
+
+**Why This Matters:**
+
+```typescript
+// ❌ WRONG: This causes "revalidatePath cannot be called during render" error
+export async function getSelectedPhotos(sessionId: string) {
+  const data = await fetchFromAPI(sessionId);
+  revalidatePath('/gallery'); // ERROR when called from Server Component
+  return data;
+}
+
+// ✅ CORRECT: Data-fetching without cache revalidation
+export async function getSelectedPhotos(sessionId: string) {
+  // Fetch fresh data directly - no cache to revalidate
+  const data = await fetchFromAPI(sessionId);
+  return data;
+}
+
+// ✅ CORRECT: Separate mutation action for revalidation if needed
+export async function completePhotoSelection(sessionId: string) {
+  // This would only be called from client components
+  // after user completes an action
+  revalidatePath('/gallery');
+  return { success: true };
+}
+```
+
+**When Cache Revalidation is NOT Needed:**
+
+- Fetching from external APIs (Google Photos, etc.) - API is source of truth
+- Data changes frequently and should always be fresh
+- No server-side caching is involved
+- The component using the data will re-fetch on mount
+
+**When to Create a Separate Mutation Action:**
+
+- You need to invalidate Next.js page cache after data changes
+- You're modifying database records and need to refresh the UI
+- User actions trigger side effects that affect cached pages
+- You need to coordinate multiple state updates
+
+See comprehensive documentation in `app/actions/photos.ts` for the complete rationale.
+
+#### 2.4 Pagination Handling
 
 **Cursor-Based Pagination with SWR**:
 
