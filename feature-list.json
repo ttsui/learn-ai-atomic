@@ -12,6 +12,85 @@
     "passes": false
   },
   {
+    "category": "bugfix",
+    "description": "Fix revalidatePath during render error in gallery page",
+    "steps": [
+      "Read app/src/app/actions/photos.ts to understand current implementation",
+      "Locate the revalidatePath call at line 95 in getSelectedPhotos function",
+      "Remove the revalidatePath('/photos') call from getSelectedPhotos",
+      "Remove the comment line 94 about cache revalidation",
+      "Verify the function still returns correct data structure",
+      "Save the changes to app/src/app/actions/photos.ts"
+    ],
+    "passes": false
+  },
+  {
+    "category": "testing",
+    "description": "Test gallery page renders without revalidatePath error",
+    "steps": [
+      "Start the Next.js development server with 'pnpm dev'",
+      "Navigate to /gallery route with a valid sessionId parameter",
+      "Verify no error about revalidatePath during render",
+      "Confirm PhotosContent component renders successfully",
+      "Check browser console for any runtime errors",
+      "Verify photos are fetched and displayed correctly"
+    ],
+    "passes": false
+  },
+  {
+    "category": "testing",
+    "description": "Verify end-to-end photo selection flow still works",
+    "steps": [
+      "Navigate to /photos page",
+      "Click the photo picker button to trigger selection",
+      "Complete photo selection in Google Photos picker",
+      "Wait for polling to complete",
+      "Verify redirect to /gallery with sessionId",
+      "Confirm selected photos display in gallery grid",
+      "Test navigation between /photos and /gallery pages"
+    ],
+    "passes": false
+  },
+  {
+    "category": "refactor",
+    "description": "Document cache revalidation strategy in codebase",
+    "steps": [
+      "Add JSDoc comment to getSelectedPhotos explaining why no revalidatePath",
+      "Document that fetching fresh data from API makes cache revalidation unnecessary",
+      "Add comment explaining Server Actions render vs mutation separation",
+      "Update architecture documentation if it exists",
+      "Add warning about not calling revalidatePath in Server Components",
+      "Document best practice: separate data-fetching from mutation actions"
+    ],
+    "passes": false
+  },
+  {
+    "category": "refactor",
+    "description": "Consider creating separate mutation action if revalidation needed",
+    "steps": [
+      "Evaluate whether cache revalidation is actually needed for this flow",
+      "If needed, create completePhotoSelection Server Action",
+      "Move revalidatePath call to the mutation action",
+      "Ensure mutation action is only called from client components",
+      "Call mutation action after user completes photo selection",
+      "Document when to use mutation actions vs data-fetching actions"
+    ],
+    "passes": false
+  },
+  {
+    "category": "prevention",
+    "description": "Add ESLint rule or code review checklist for cache functions",
+    "steps": [
+      "Research eslint-plugin-next rules for revalidatePath usage",
+      "Configure ESLint to warn when revalidatePath used in Server Actions",
+      "Add code review checklist item about Server Action purity",
+      "Document the difference between render-phase and action-phase functions",
+      "Add examples of correct vs incorrect usage to team documentation",
+      "Consider adding pre-commit hook to catch this pattern"
+    ],
+    "passes": false
+  },
+  {
     "category": "setup",
     "description": "Install Next.js dependencies",
     "steps": [
