@@ -35,7 +35,7 @@
       "Check browser console for any runtime errors",
       "Verify photos are fetched and displayed correctly"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "category": "testing",
