@@ -197,7 +197,7 @@
       "Set matcher for /gallery/:path* routes",
       "Set matcher for /api/photos/:path* routes"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "category": "functional",
