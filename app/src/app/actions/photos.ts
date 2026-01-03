@@ -1,7 +1,6 @@
 "use server";
 
 import { auth } from "@/lib/auth/config";
-import { revalidatePath } from "next/cache";
 import type { CreateSessionResponse, MediaItem } from "@/types/google-photos";
 
 const GOOGLE_PHOTOS_PICKER_API = "https://photospicker.googleapis.com/v1";
@@ -90,9 +89,6 @@ export async function getSelectedPhotos(
     }
 
     const data = await response.json();
-
-    // Revalidate the photos page cache
-    revalidatePath("/photos");
 
     return {
       mediaItems: data.mediaItems || [],
