@@ -49,7 +49,7 @@
       "Confirm selected photos display in gallery grid",
       "Test navigation between /photos and /gallery pages"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "category": "refactor",
