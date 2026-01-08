@@ -75,7 +75,7 @@
       "Call mutation action after user completes photo selection",
       "Document when to use mutation actions vs data-fetching actions"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "category": "prevention",
