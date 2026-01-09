@@ -88,7 +88,7 @@
       "Add examples of correct vs incorrect usage to team documentation",
       "Consider adding pre-commit hook to catch this pattern"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "category": "setup",
