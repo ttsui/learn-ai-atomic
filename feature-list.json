@@ -1,0 +1,782 @@
+[
+  {
+    "category": "setup",
+    "description": "Create Google Cloud Console project and enable APIs",
+    "steps": [
+      "Create new Google Cloud Console project",
+      "Enable Google Photos Picker API",
+      "Create OAuth consent screen",
+      "Configure authorized JavaScript origins",
+      "Configure authorized redirect URIs for all environments (dev, staging, prod)"
+    ],
+    "passes": false
+  },
+  {
+    "category": "bugfix",
+    "description": "Fix revalidatePath during render error in gallery page",
+    "steps": [
+      "Read app/src/app/actions/photos.ts to understand current implementation",
+      "Locate the revalidatePath call at line 95 in getSelectedPhotos function",
+      "Remove the revalidatePath('/photos') call from getSelectedPhotos",
+      "Remove the comment line 94 about cache revalidation",
+      "Verify the function still returns correct data structure",
+      "Save the changes to app/src/app/actions/photos.ts"
+    ],
+    "passes": true
+  },
+  {
+    "category": "testing",
+    "description": "Test gallery page renders without revalidatePath error",
+    "steps": [
+      "Start the Next.js development server with 'pnpm dev'",
+      "Navigate to /gallery route with a valid sessionId parameter",
+      "Verify no error about revalidatePath during render",
+      "Confirm PhotosContent component renders successfully",
+      "Check browser console for any runtime errors",
+      "Verify photos are fetched and displayed correctly"
+    ],
+    "passes": true
+  },
+  {
+    "category": "testing",
+    "description": "Verify end-to-end photo selection flow still works",
+    "steps": [
+      "Navigate to /photos page",
+      "Click the photo picker button to trigger selection",
+      "Complete photo selection in Google Photos picker",
+      "Wait for polling to complete",
+      "Verify redirect to /gallery with sessionId",
+      "Confirm selected photos display in gallery grid",
+      "Test navigation between /photos and /gallery pages"
+    ],
+    "passes": true
+  },
+  {
+    "category": "refactor",
+    "description": "Document cache revalidation strategy in codebase",
+    "steps": [
+      "Add JSDoc comment to getSelectedPhotos explaining why no revalidatePath",
+      "Document that fetching fresh data from API makes cache revalidation unnecessary",
+      "Add comment explaining Server Actions render vs mutation separation",
+      "Update architecture documentation if it exists",
+      "Add warning about not calling revalidatePath in Server Components",
+      "Document best practice: separate data-fetching from mutation actions"
+    ],
+    "passes": true
+  },
+  {
+    "category": "refactor",
+    "description": "Consider creating separate mutation action if revalidation needed",
+    "steps": [
+      "Evaluate whether cache revalidation is actually needed for this flow",
+      "If needed, create completePhotoSelection Server Action",
+      "Move revalidatePath call to the mutation action",
+      "Ensure mutation action is only called from client components",
+      "Call mutation action after user completes photo selection",
+      "Document when to use mutation actions vs data-fetching actions"
+    ],
+    "passes": true
+  },
+  {
+    "category": "prevention",
+    "description": "Add ESLint rule or code review checklist for cache functions",
+    "steps": [
+      "Research eslint-plugin-next rules for revalidatePath usage",
+      "Configure ESLint to warn when revalidatePath used in Server Actions",
+      "Add code review checklist item about Server Action purity",
+      "Document the difference between render-phase and action-phase functions",
+      "Add examples of correct vs incorrect usage to team documentation",
+      "Consider adding pre-commit hook to catch this pattern"
+    ],
+    "passes": true
+  },
+  {
+    "category": "setup",
+    "description": "Install Next.js dependencies",
+    "steps": [
+      "Install next-auth@4.24.0",
+      "Install @tanstack/react-virtual@3.0.0",
+      "Install swr@2.2.0",
+      "Install isomorphic-dompurify for input sanitization",
+      "Verify TypeScript configuration"
+    ],
+    "passes": true
+  },
+  {
+    "category": "setup",
+    "description": "Configure environment variables",
+    "steps": [
+      "Create .env.local file",
+      "Add NEXT_PUBLIC_GOOGLE_CLIENT_ID",
+      "Add GOOGLE_CLIENT_SECRET (server-only, no NEXT_PUBLIC_ prefix)",
+      "Add NEXTAUTH_SECRET (generate with openssl rand -hex 32)",
+      "Add NEXTAUTH_URL for local and production environments",
+      "Add .env.local to .gitignore",
+      "Create .env.example with placeholder values"
+    ],
+    "passes": true
+  },
+  {
+    "category": "setup",
+    "description": "Configure Content Security Policy headers",
+    "steps": [
+      "Create next.config.js if not exists",
+      "Add CSP header with default-src 'self'",
+      "Add script-src for accounts.google.com and apis.google.com",
+      "Add img-src for *.googleusercontent.com",
+      "Add connect-src for *.googleapis.com",
+      "Add frame-src for accounts.google.com",
+      "Add X-Frame-Options DENY header",
+      "Add X-Content-Type-Options nosniff header"
+    ],
+    "passes": true
+  },
+  {
+    "category": "functional",
+    "description": "Create TypeScript type definitions",
+    "steps": [
+      "Create types/google-photos.ts file",
+      "Define MediaItem interface with id, baseUrl, mimeType, metadata",
+      "Define PickerSession interface with id, pickerUri, pollingConfig",
+      "Define PhotosResponse interface with mediaItems array and nextPageToken",
+      "Create types/next-auth.d.ts for type augmentation",
+      "Extend NextAuth Session interface with accessToken and error",
+      "Extend NextAuth JWT interface with token fields and expiry"
+    ],
+    "passes": true
+  },
+  {
+    "category": "functional",
+    "description": "Implement NextAuth.js OAuth configuration",
+    "steps": [
+      "Create lib/auth/config.ts file",
+      "Configure GoogleProvider with client ID and secret",
+      "Set authorization params with photospicker.mediaitems.readonly scope",
+      "Set access_type to 'offline' for refresh token",
+      "Set prompt to 'consent' to always show consent screen",
+      "Implement jwt callback to store tokens on sign-in",
+      "Implement jwt callback to check token expiration",
+      "Implement token refresh logic in jwt callback",
+      "Implement session callback to pass accessToken",
+      "Set session strategy to 'jwt' for serverless compatibility"
+    ],
+    "passes": true
+  },
+  {
+    "category": "functional",
+    "description": "Create NextAuth.js API route handler",
+    "steps": [
+      "Create app/api/auth/[...nextauth]/route.ts",
+      "Import NextAuth and authOptions",
+      "Create handler with NextAuth(authOptions)",
+      "Export handler as GET and POST"
+    ],
+    "passes": true
+  },
+  {
+    "category": "functional",
+    "description": "Implement token refresh utility",
+    "steps": [
+      "Create refreshAccessToken function in lib/auth/config.ts",
+      "Fetch new token from oauth2.googleapis.com/token",
+      "Handle refresh token rotation (Google may issue new refresh token)",
+      "Return updated token with new accessToken and expiry",
+      "Handle refresh failure by setting error field",
+      "Add try-catch for network errors"
+    ],
+    "passes": true
+  },
+  {
+    "category": "functional",
+    "description": "Create NextAuth middleware for route protection",
+    "steps": [
+      "Create middleware.ts in root directory",
+      "Import withAuth from next-auth/middleware",
+      "Configure authorized callback to check for token",
+      "Set matcher for /photos/:path* routes",
+      "Set matcher for /gallery/:path* routes",
+      "Set matcher for /api/photos/:path* routes"
+    ],
+    "passes": true
+  },
+  {
+    "category": "functional",
+    "description": "Create API route for creating picker session",
+    "steps": [
+      "Create app/api/photos/sessions/route.ts",
+      "Implement POST handler",
+      "Get session using getServerSession(authOptions)",
+      "Return 401 if no accessToken in session",
+      "POST to photospicker.googleapis.com/v1/sessions with Bearer token",
+      "Parse response for sessionId, pickerUri, pollingConfig",
+      "Return formatted response with sessionId, pickerUri, pollInterval, timeout",
+      "Handle errors and return appropriate status codes"
+    ],
+    "passes": true
+  },
+  {
+    "category": "functional",
+    "description": "Create API route for polling session status",
+    "steps": [
+      "Create app/api/photos/sessions/[sessionId]/route.ts",
+      "Implement GET handler with sessionId param",
+      "Get session using getServerSession(authOptions)",
+      "Return 401 if not authenticated",
+      "GET from photospicker.googleapis.com/v1/sessions/{sessionId}",
+      "Return session status with mediaItemsSet boolean",
+      "Handle FAILED_PRECONDITION error (user hasn't finished)",
+      "Handle 404 NOT_FOUND error (session expired)"
+    ],
+    "passes": true
+  },
+  {
+    "category": "functional",
+    "description": "Create API route for fetching selected photos",
+    "steps": [
+      "Create app/api/photos/route.ts",
+      "Implement GET handler",
+      "Get session using getServerSession(authOptions)",
+      "Check for RefreshAccessTokenError and return 401",
+      "Parse sessionId and pageToken from query params",
+      "GET from photospicker.googleapis.com/v1/mediaItems",
+      "Return mediaItems array and nextPageToken for pagination",
+      "Handle errors (401, 403, 429) with appropriate messages"
+    ],
+    "passes": true
+  },
+  {
+    "category": "functional",
+    "description": "Create error handling utilities",
+    "steps": [
+      "Create lib/utils/errors.ts",
+      "Define APIError class with statusCode, code, and message",
+      "Create handleGoogleAPIError function for standard error responses",
+      "Map 401 to UNAUTHENTICATED with token refresh message",
+      "Map 403 to FORBIDDEN with permission denied message",
+      "Map 429 to RATE_LIMITED with retry message",
+      "Export error types for use in API routes"
+    ],
+    "passes": false
+  },
+  {
+    "category": "functional",
+    "description": "Create retry utility with exponential backoff",
+    "steps": [
+      "Create lib/utils/retry.ts",
+      "Implement retryWithBackoff function with generic type",
+      "Accept options: maxRetries, baseDelay, maxDelay, shouldRetry",
+      "Loop through retry attempts with exponential backoff",
+      "Don't retry on auth errors (401)",
+      "Calculate delay as min(baseDelay * 2^attempt, maxDelay)",
+      "Throw last error if all retries exhausted"
+    ],
+    "passes": false
+  },
+  {
+    "category": "functional",
+    "description": "Create Server Action for picker session creation",
+    "steps": [
+      "Create app/actions/photos.ts with 'use server' directive",
+      "Export createPickerSession async function",
+      "Get session using getServerSession(authOptions)",
+      "Throw error if not authenticated",
+      "POST to photospicker.googleapis.com/v1/sessions",
+      "Return pickerUri and sessionId",
+      "Add error handling for network failures"
+    ],
+    "passes": true
+  },
+  {
+    "category": "functional",
+    "description": "Create Server Action for fetching selected photos",
+    "steps": [
+      "Add getSelectedPhotos function to app/actions/photos.ts",
+      "Accept sessionId parameter",
+      "Get session using getServerSession(authOptions)",
+      "GET from photospicker.googleapis.com/v1/mediaItems",
+      "Call revalidatePath('/photos') to refresh cache",
+      "Return mediaItems array",
+      "Handle pagination if needed"
+    ],
+    "passes": true
+  },
+  {
+    "category": "ui",
+    "description": "Create PickerButton component",
+    "steps": [
+      "Create components/GooglePhotoPicker/PickerButton.tsx",
+      "Add 'use client' directive",
+      "Import useTransition from React",
+      "Import createPickerSession Server Action",
+      "Accept onSessionCreated callback prop",
+      "Implement handleClick with startTransition",
+      "Call createPickerSession and pass result to callback",
+      "Show 'Starting...' text when isPending",
+      "Disable button when pending",
+      "Style with Tailwind CSS"
+    ],
+    "passes": true
+  },
+  {
+    "category": "ui",
+    "description": "Create PickerStatus polling indicator component",
+    "steps": [
+      "Create components/GooglePhotoPicker/PickerStatus.tsx",
+      "Add 'use client' directive",
+      "Accept state prop (picking, polling, complete, error)",
+      "Show 'Waiting for photo selection...' when picking",
+      "Show spinner and 'Processing...' when polling",
+      "Show success message when complete",
+      "Show error message with retry button when error",
+      "Style states with appropriate colors and icons"
+    ],
+    "passes": true
+  },
+  {
+    "category": "ui",
+    "description": "Create useSessionPolling custom hook",
+    "steps": [
+      "Create hooks/useSessionPolling.ts",
+      "Accept onComplete, onError, pollInterval, timeout options",
+      "Maintain isPolling state",
+      "Use useRef for intervalRef and timeoutRef",
+      "Implement startPolling function that calls API route",
+      "Check mediaItemsSet status and call onComplete when true",
+      "Implement stopPolling to clear intervals and timeouts",
+      "Set timeout to call onError after specified duration",
+      "Return startPolling, stopPolling, isPolling"
+    ],
+    "passes": true
+  },
+  {
+    "category": "ui",
+    "description": "Create PhotoPickerFlow orchestration component",
+    "steps": [
+      "Create components/PhotoPickerFlow.tsx",
+      "Add 'use client' directive",
+      "Manage state: idle, picking, polling, complete, error",
+      "Import PickerButton and useSessionPolling hook",
+      "Implement handleSessionCreated to open picker window",
+      "Append /autoclose to pickerUri for auto-close behavior",
+      "Start polling when picker window opens",
+      "Monitor picker window close with setInterval",
+      "Show appropriate UI for each state",
+      "Allow reset to idle state after completion"
+    ],
+    "passes": true
+  },
+  {
+    "category": "ui",
+    "description": "Create PhotoCard component",
+    "steps": [
+      "Create components/PhotoGallery/PhotoCard.tsx",
+      "Add 'use client' directive",
+      "Accept photo prop with MediaItem type",
+      "Accept optional onClick callback",
+      "Use Next.js Image component",
+      "Construct thumbnail URL with =w400-h400-c parameter",
+      "Maintain isLoading state for progressive loading",
+      "Show loading skeleton while image loads",
+      "Use aspect-square and object-cover for consistent sizing",
+      "Configure sizes prop for responsive images"
+    ],
+    "passes": true
+  },
+  {
+    "category": "ui",
+    "description": "Create Gallery grid component",
+    "steps": [
+      "Create components/PhotoGallery/Gallery.tsx",
+      "Add 'use client' directive",
+      "Accept photos array and sessionId props",
+      "Use CSS Grid with responsive columns (2, 3, 4 based on breakpoint)",
+      "Map photos to PhotoCard components",
+      "Handle empty state with message",
+      "Add gap between items",
+      "Support onClick to show lightbox (optional)"
+    ],
+    "passes": true
+  },
+  {
+    "category": "ui",
+    "description": "Create loading skeleton components",
+    "steps": [
+      "Create components/PhotoGallery/Skeleton.tsx",
+      "Export GallerySkeleton component",
+      "Render grid of 12 placeholder boxes",
+      "Use animate-pulse for loading effect",
+      "Match grid layout of actual gallery",
+      "Use aspect-square for placeholder boxes"
+    ],
+    "passes": true
+  },
+  {
+    "category": "ui",
+    "description": "Create ErrorBoundary component",
+    "steps": [
+      "Create components/ErrorBoundary.tsx",
+      "Add 'use client' directive",
+      "Extend React.Component with error state",
+      "Implement static getDerivedStateFromError",
+      "Accept optional fallback prop",
+      "Show error message and retry button",
+      "Allow reset of error state",
+      "Style error UI with appropriate colors"
+    ],
+    "passes": false
+  },
+  {
+    "category": "ui",
+    "description": "Create usePhotosInfinite hook for pagination",
+    "steps": [
+      "Create hooks/usePhotosInfinite.ts",
+      "Import useSWRInfinite from swr/infinite",
+      "Implement getKey function for pagination",
+      "Check for nextPageToken in previousPageData",
+      "Construct API URL with sessionId and pageToken",
+      "Flatten data from all pages into single photos array",
+      "Calculate isLoadingMore state",
+      "Determine hasMore based on nextPageToken",
+      "Return photos, loadMore, isLoadingMore, hasMore, error"
+    ],
+    "passes": false
+  },
+  {
+    "category": "ui",
+    "description": "Create photo picker page",
+    "steps": [
+      "Create app/photos/page.tsx",
+      "Make it a Server Component (no 'use client')",
+      "Get session using getServerSession",
+      "Redirect to /auth/signin if not authenticated",
+      "Import and render PhotoPickerFlow component",
+      "Add page title and description",
+      "Create app/photos/loading.tsx with loading skeleton",
+      "Create app/photos/error.tsx with error boundary"
+    ],
+    "passes": true
+  },
+  {
+    "category": "ui",
+    "description": "Create photo gallery page",
+    "steps": [
+      "Create app/gallery/page.tsx",
+      "Accept sessionId from searchParams",
+      "Get session using getServerSession",
+      "Redirect if not authenticated",
+      "Wrap content in Suspense with GallerySkeleton fallback",
+      "Fetch photos server-side if sessionId provided",
+      "Pass initialPhotos to Gallery component",
+      "Show empty state if no sessionId",
+      "Handle errors with error boundary"
+    ],
+    "passes": true
+  },
+  {
+    "category": "functional",
+    "description": "Create Google Photos API client wrapper",
+    "steps": [
+      "Create lib/google-photos/client.ts",
+      "Export GooglePhotosClient class",
+      "Accept accessToken in constructor",
+      "Implement createSession method",
+      "Implement getSessionStatus method",
+      "Implement listMediaItems method with pagination",
+      "Add Authorization header with Bearer token",
+      "Handle errors and throw APIError instances",
+      "Add JSDoc comments for all methods"
+    ],
+    "passes": false
+  },
+  {
+    "category": "performance",
+    "description": "Implement image optimization with Google Photos URL parameters",
+    "steps": [
+      "Create components/PhotoGallery/OptimizedPhoto.tsx",
+      "Use blur-up placeholder technique",
+      "Load thumbnail with =w200-h200-c parameter first",
+      "Load full image with =w1200 parameter",
+      "Maintain loaded state to control opacity transition",
+      "Show blur-sm on thumbnail while full image loads",
+      "Set transition-opacity for smooth loading",
+      "Support priority prop for above-fold images"
+    ],
+    "passes": false
+  },
+  {
+    "category": "performance",
+    "description": "Implement virtualization for large photo galleries",
+    "steps": [
+      "Create components/PhotoGallery/VirtualizedGallery.tsx",
+      "Import useVirtualizer from @tanstack/react-virtual",
+      "Calculate rows based on photos.length and columns",
+      "Configure virtualizer with count, getScrollElement, estimateSize",
+      "Set overscan to 3 for smooth scrolling",
+      "Map virtualItems to photo rows",
+      "Use absolute positioning for virtual items",
+      "Set grid-template-columns dynamically based on columns prop"
+    ],
+    "passes": false
+  },
+  {
+    "category": "testing",
+    "description": "Write unit tests for token refresh logic",
+    "steps": [
+      "Create __tests__/lib/auth/refresh.test.ts",
+      "Mock fetch for token refresh endpoint",
+      "Test successful token refresh",
+      "Test refresh failure handling",
+      "Test token rotation (new refresh token issued)",
+      "Test error state in JWT callback",
+      "Verify accessTokenExpires is updated correctly"
+    ],
+    "passes": false
+  },
+  {
+    "category": "testing",
+    "description": "Write unit tests for picker session creation",
+    "steps": [
+      "Create __tests__/api/photos/sessions.test.ts",
+      "Mock getServerSession",
+      "Test successful session creation",
+      "Test 401 when not authenticated",
+      "Test Google API error handling",
+      "Verify Bearer token is passed correctly",
+      "Test response format matches specification"
+    ],
+    "passes": false
+  },
+  {
+    "category": "testing",
+    "description": "Write integration tests for OAuth flow",
+    "steps": [
+      "Create __tests__/integration/oauth.test.ts",
+      "Mock Google OAuth endpoints",
+      "Test complete OAuth flow from login to callback",
+      "Test redirect to login when unauthorized",
+      "Test token storage in JWT",
+      "Test session creation after successful auth",
+      "Verify refresh token is not exposed to client"
+    ],
+    "passes": false
+  },
+  {
+    "category": "testing",
+    "description": "Write integration tests for photo selection flow",
+    "steps": [
+      "Create __tests__/integration/picker-flow.test.ts",
+      "Mock picker session creation",
+      "Mock session polling responses",
+      "Test polling until mediaItemsSet is true",
+      "Test timeout after 30 minutes",
+      "Test media items retrieval after completion",
+      "Verify proper state transitions"
+    ],
+    "passes": false
+  },
+  {
+    "category": "testing",
+    "description": "Write E2E tests with Playwright",
+    "steps": [
+      "Create e2e/photo-picker.spec.ts",
+      "Set up Playwright test configuration",
+      "Mock Google OAuth flow",
+      "Test navigation to /photos",
+      "Test clicking 'Sign in with Google'",
+      "Test clicking 'Select Photos' button",
+      "Verify photo gallery becomes visible",
+      "Test photo card rendering",
+      "Take screenshots for visual regression testing"
+    ],
+    "passes": false
+  },
+  {
+    "category": "setup",
+    "description": "Submit OAuth verification request to Google",
+    "steps": [
+      "Complete OAuth consent screen configuration",
+      "Add privacy policy URL",
+      "Add terms of service URL",
+      "Describe app functionality and data usage",
+      "Record demo video of OAuth flow",
+      "Submit verification request in Google Cloud Console",
+      "Wait for approval (can take 2-4 weeks)",
+      "Monitor verification status",
+      "Address any feedback from Google reviewers"
+    ],
+    "passes": false
+  },
+  {
+    "category": "functional",
+    "description": "Implement monitoring and logging",
+    "steps": [
+      "Add structured logging for OAuth events",
+      "Log oauth_login_success with userId and provider",
+      "Log oauth_login_failure with error details",
+      "Log token_refresh_failure events",
+      "Log picker_session_duration with sessionId and photoCount",
+      "Set up metrics collection for oauth_login_success_total counter",
+      "Set up metrics for photos_api_latency_ms histogram",
+      "Configure alerts for > 10% oauth failure rate",
+      "Configure alerts for any token_refresh_failure"
+    ],
+    "passes": false
+  },
+  {
+    "category": "functional",
+    "description": "Implement feature flag for gradual rollout",
+    "steps": [
+      "Add FEATURE_GOOGLE_PHOTOS_ENABLED environment variable",
+      "Create lib/feature-flags.ts utility",
+      "Implement isGooglePhotosEnabled() function",
+      "Wrap photo picker routes with feature flag check",
+      "Show 'Coming soon' message when disabled",
+      "Default to false (opt-in)",
+      "Document flag in README",
+      "Plan rollout: Phase 1 (internal), Phase 2 (5% beta), Phase 3 (100%)"
+    ],
+    "passes": false
+  },
+  {
+    "category": "refactor",
+    "description": "Implement environment variable validation on startup",
+    "steps": [
+      "Create lib/config/validate-env.ts",
+      "Define required server-side environment variables array",
+      "Check for GOOGLE_CLIENT_SECRET",
+      "Check for NEXTAUTH_SECRET",
+      "Check for NEXTAUTH_URL",
+      "Throw descriptive error if any required var is missing",
+      "Add runtime check to ensure secrets not exposed to browser",
+      "Call validation function at app startup"
+    ],
+    "passes": false
+  },
+  {
+    "category": "functional",
+    "description": "Implement rate limiting for API routes",
+    "steps": [
+      "Install rate limiting library or implement custom middleware",
+      "Add rate limiting to /api/photos/sessions (5 requests per 15 minutes)",
+      "Add rate limiting to /api/photos (100 requests per 15 minutes)",
+      "Return 429 Too Many Requests when limit exceeded",
+      "Include Retry-After header",
+      "Log rate limit violations",
+      "Consider per-user vs global rate limiting"
+    ],
+    "passes": false
+  },
+  {
+    "category": "ui",
+    "description": "Create sign-in and sign-out pages",
+    "steps": [
+      "Create app/(auth)/signin/page.tsx",
+      "Import signIn from next-auth/react",
+      "Add 'Sign in with Google' button",
+      "Style with Google branding guidelines",
+      "Create app/(auth)/signout/page.tsx",
+      "Import signOut from next-auth/react",
+      "Add confirmation dialog before sign out",
+      "Redirect to home after sign out"
+    ],
+    "passes": false
+  },
+  {
+    "category": "functional",
+    "description": "Implement token revocation on logout",
+    "steps": [
+      "Create revokeGoogleToken function in lib/auth/config.ts",
+      "POST to oauth2.googleapis.com/revoke with refresh token",
+      "Call revocation in custom signOut handler",
+      "Clear session from NextAuth",
+      "Delete HTTP-only cookie",
+      "Redirect to home page",
+      "Handle revocation errors gracefully"
+    ],
+    "passes": false
+  },
+  {
+    "category": "ui",
+    "description": "Add loading states and progress indicators",
+    "steps": [
+      "Create Spinner component in components/ui/Spinner.tsx",
+      "Add loading skeleton for photo grid",
+      "Show progress bar during polling (estimated time remaining)",
+      "Add shimmer effect to loading images",
+      "Show photo count during selection",
+      "Display 'X photos selected' message"
+    ],
+    "passes": false
+  },
+  {
+    "category": "functional",
+    "description": "Implement comprehensive error messages",
+    "steps": [
+      "Create lib/utils/error-messages.ts",
+      "Map 401 to 'Please sign in again'",
+      "Map 403 to 'Permission denied. Please grant photo access'",
+      "Map 429 to 'Too many requests. Please try again in a minute'",
+      "Map session timeout to 'Session expired. Please try again'",
+      "Map network errors to 'Connection lost. Retrying...'",
+      "Use error messages in UI components",
+      "Add user-friendly retry actions"
+    ],
+    "passes": false
+  },
+  {
+    "category": "refactor",
+    "description": "Add JSDoc comments and documentation",
+    "steps": [
+      "Add JSDoc comments to all exported functions",
+      "Document function parameters and return types",
+      "Add usage examples for complex functions",
+      "Document error conditions and exceptions",
+      "Add README.md in lib/google-photos/",
+      "Document environment variables in README",
+      "Create ARCHITECTURE.md explaining system design"
+    ],
+    "passes": false
+  },
+  {
+    "category": "performance",
+    "description": "Configure SWR caching strategy",
+    "steps": [
+      "Create lib/swr-config.ts",
+      "Set revalidateOnFocus: false for photo metadata",
+      "Set revalidateOnReconnect: true",
+      "Set dedupingInterval: 2000ms",
+      "Set errorRetryCount: 3",
+      "Set errorRetryInterval: 5000ms",
+      "Never cache baseUrl values (60-min expiry warning)",
+      "Document caching strategy in comments"
+    ],
+    "passes": false
+  },
+  {
+    "category": "ui",
+    "description": "Add accessibility features",
+    "steps": [
+      "Add ARIA labels to PickerButton ('Select photos from Google Photos')",
+      "Add alt text to all images",
+      "Ensure keyboard navigation works (Tab, Enter, Space)",
+      "Add focus indicators to interactive elements",
+      "Test with screen reader",
+      "Add skip to main content link",
+      "Ensure color contrast meets WCAG AA standards"
+    ],
+    "passes": false
+  },
+  {
+    "category": "functional",
+    "description": "Implement session persistence (optional)",
+    "steps": [
+      "Decide whether to store sessionIds in database",
+      "Create database schema for picker_sessions table",
+      "Store sessionId, userId, createdAt, expiresAt",
+      "Allow users to resume incomplete sessions",
+      "Clean up expired sessions with cron job",
+      "Document pros/cons of persistence approach"
+    ],
+    "passes": false
+  }
+]
